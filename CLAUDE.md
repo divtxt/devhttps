@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 DevHttps is a CLI tool for HTTPS reverse proxy in local development. See README.md for user-facing documentation, features, and usage examples.
 
+## Development Notes
+
+- Do NOT do git commits. Let the user do those.
+- If you need to run "add" command, ask the user to run it since it is interactive.
+
+
 ## Architecture
 
 DevHttps follows a simple CLI architecture:
@@ -53,7 +59,3 @@ go run main.go check
 
 - `github.com/urfave/cli/v3`: CLI framework for command parsing and execution
 - Standard library only for all internal logic (no external dependencies for business logic)
-
-## Testing Notes
-
-No test files currently exist in the codebase. Tests would be added as `*_test.go` files next to their corresponding implementation files.

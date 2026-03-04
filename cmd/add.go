@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/divtxt/devhttps/internal/caddy"
 	"github.com/divtxt/devhttps/internal/certbot"
 	"github.com/divtxt/devhttps/internal/config"
 	"github.com/divtxt/devhttps/internal/hostcheck"
@@ -159,10 +160,34 @@ Example:
 				}
 			}
 
-			fmt.Printf("\nYour service is now available at:\n")
-			fmt.Printf("\n    https://%s\n\n", domain)
-			fmt.Printf("Remember to run your service, or use: devhttps http %d\n", port)
-			return nil
+		// (1) Load full config
+		cfg, err = config.Load()
+		if err != nil {
+			fmt.Printf("Error loading config for Caddyfile: %s\n", err)
+			return cli.Exit("", 1)
+		}
+		// (2) Generate Caddyfile content
+		content, err := caddy.GenerateCaddyfile(cfg)
+		if err != nil {
+			fmt.Printf("Error generating Caddyfile: %s\n", err)
+			return cli.Exit("", 1)
+		}
+		// (3) Write Caddyfile to disk
+		if err := caddy.WriteCaddyfile(content); err != nil {
+			fmt.Printf("Error writing Caddyfile: %s\n", err)
+			return cli.Exit("", 1)
+		}
+		// (4) Validate written Caddyfile
+		if err := caddy.Validate(content); err != nil {
+			fmt.Printf("Error validating Caddyfile: %s\n", err)
+			return cli.Exit("", 1)
+		}
+		fmt.Printf("✓ Caddyfile updated and validated\n\n")
+
+		fmt.Printf("\nYour service is now available at:\n")
+		fmt.Printf("\n    https://%s\n\n", domain)
+		fmt.Printf("Remember to run your service, or use: devhttps http %d\n", port)
+		return nil
 		},
 	}
 }

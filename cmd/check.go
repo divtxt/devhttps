@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/divtxt/devhttps/internal/caddy"
 	"github.com/divtxt/devhttps/internal/certbot"
 	"github.com/divtxt/devhttps/internal/config"
 	"github.com/urfave/cli/v3"
@@ -44,8 +46,16 @@ func newCheckCommand() *cli.Command {
 			printConfiguredDomains(cfg, certs, certsErr != nil)
 			printUnusedCerts(cfg, certs, certsErr)
 
+			fmt.Println()
+			fmt.Println("Caddy:")
+			ok = checkCaddy(cfg) && ok
+
+			fmt.Println()
 			fmt.Println("(to edit port or renew certificates, use add command)")
 			fmt.Println()
+			if !ok {
+				return cli.Exit("", 1)
+			}
 			return nil
 		},
 	}
@@ -134,4 +144,38 @@ func printUnusedCerts(cfg *config.Config, certs []certbot.CertInfo, certsErr err
 			fmt.Printf("  ✗ %s\n", c.Domain)
 		}
 	}
+}
+
+func checkCaddy(cfg *config.Config) bool {
+	ok := true
+	dir, _ := caddy.Dir()
+	caddyfilePath := filepath.Join(dir, "Caddyfile")
+
+	expected, err := caddy.GenerateCaddyfile(cfg)
+	if err != nil {
+		fmt.Printf("  ✗ %s: failed to generate expected content: %v\n", caddyfilePath, err)
+		return false
+	}
+
+	actual, err := caddy.ReadCaddyfile()
+	if err != nil {
+		fmt.Printf("  ✗ %s: %v\n", caddyfilePath, err)
+		return false
+	}
+
+	if actual != expected {
+		fmt.Printf("  ✗ %s: content does not match config\n", caddyfilePath)
+		ok = false
+	} else {
+		fmt.Printf("  ✓ %s\n", caddyfilePath)
+	}
+
+	if err := caddy.Validate(actual); err != nil {
+		fmt.Printf("  ✗ caddy validate: %v\n", err)
+		ok = false
+	} else {
+		fmt.Printf("  ✓ caddy validate\n")
+	}
+
+	return ok
 }
