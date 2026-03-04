@@ -1,12 +1,16 @@
 package certbot
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
-func dirs() (configDir, logsDir, workDir string, err error) {
+func Dirs() (configDir, logsDir, workDir string, err error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return
@@ -19,7 +23,7 @@ func dirs() (configDir, logsDir, workDir string, err error) {
 }
 
 func Run(domain string) error {
-	configDir, logsDir, workDir, err := dirs()
+	configDir, logsDir, workDir, err := Dirs()
 	if err != nil {
 		return err
 	}
@@ -41,4 +45,64 @@ func Run(domain string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+type CertInfo struct {
+	Domain   string
+	Valid    bool
+	DaysLeft int // only meaningful when Valid=true
+}
+
+func Certificates() ([]CertInfo, error) {
+	configDir, logsDir, workDir, err := Dirs()
+	if err != nil {
+		return nil, err
+	}
+	out, err := exec.Command("certbot", "certificates",
+		"--config-dir", configDir,
+		"--logs-dir", logsDir,
+		"--work-dir", workDir,
+	).CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", strings.TrimSpace(string(out)), err)
+	}
+	return parseCertificates(string(out)), nil
+}
+
+func parseCertificates(output string) []CertInfo {
+	certRegex := regexp.MustCompile(`Certificate Name:\s*(\S+)`)
+	statusRegex := regexp.MustCompile(`Expiry Date:[^(]*\((VALID|INVALID)(?::\s*(\d+)\s*days)?`)
+
+	lines := strings.Split(output, "\n")
+	certs := make([]CertInfo, 0)
+	var currentDomain string
+
+	for _, line := range lines {
+		certMatch := certRegex.FindStringSubmatch(line)
+		if certMatch != nil {
+			currentDomain = certMatch[1]
+			continue
+		}
+
+		statusMatch := statusRegex.FindStringSubmatch(line)
+		if statusMatch != nil && currentDomain != "" {
+			validStr := statusMatch[1]
+			valid := validStr == "VALID"
+			daysLeft := 0
+
+			if valid && statusMatch[2] != "" {
+				daysLeft, _ = strconv.Atoi(statusMatch[2])
+			}
+
+			certs = append(certs, CertInfo{
+				Domain:   currentDomain,
+				Valid:    valid,
+				DaysLeft: daysLeft,
+			})
+
+			currentDomain = ""
+		}
+	}
+
+	return certs
 }

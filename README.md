@@ -19,25 +19,33 @@ DevHttps automatically generates a https certificate,  and configures and runs
 
 ## Quickstart:
 
-(1) Install DevHttps and Caddy webserver:
+(1) Install:
 
 ```shell
-brew install devhttps caddy
+brew install certbot caddy
+
+# Clone the repo
+cd ~/go/
+git clone git@github.com:divtxt/devhttps.git
+cd devhttps/
+
+# Build
+go build main.go
 ```
 
 
 (2) Choose a subdomain for development e.g. `dev.yourapp.com`:
 
-- Use a domain you control - you must be able to edit DNS entries!
+Use a domain you control (in place of "yourapp.com") - you must be able to create DNS entries!
 
 
 (3) Configure DevHttps for your chosen domain:
-  - Use your chosen subdomain
-  - Use the development port for your app (e.g. 3000 for node)
-  - Create the 2 DNS entries specified as instructed
+  - Use your chosen subdomain (in place of "dev.yourapp.com")
+  - Use the correct development port for your app (in place of 3000)
+  - Follow instructions
 
 ```shell
-devhttps add --start dev.myapp.com 3000
+./devhttps add dev.myapp.com 3000
 
 # (create DNS entries as shown by the command)
 ```
