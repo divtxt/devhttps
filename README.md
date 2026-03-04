@@ -6,15 +6,16 @@
 
 Develop using `https://dev.yourapp.com` instead of `http://localhost:3000` !
 
-DevHttps automatically generates a https certificate,  and configures and runs
-[Caddy](https://caddyserver.com/) with https reverse proxy.
+DevHttps automates generation of https certificate usig certbot,
+and configures and runs [Caddy](https://caddyserver.com/)
+in https reverse proxy mode.
 
 **Benefits:**
 
-- Develop & test with https e.g. secure cookies
-- Nice URLs: e.g. `https://dev.yourapp.com` instead of `http://localhost:3000`
+- Develop with https features enabled e.g. secure cookies
+- Catch https issues in development instead of in production
 - No need to disable security checks for non-https development
-- Catch https related issues before deploying to production
+- No root certificate to be installed.
 
 
 ## Quickstart:
