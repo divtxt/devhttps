@@ -120,14 +120,41 @@ Example:
 			if certOK {
 				fmt.Printf("✓ %s cert already exists (%d days left)\n", domain, daysLeft)
 			} else {
-				fmt.Printf("→ Running certbot to create certificates for '%s'...\n", domain)
+				fmt.Printf("→ Will run certbot to generate certificate for '%s'...\n", domain)
 				fmt.Printf("\n    You will be prompted to do the following:\n")
 				fmt.Printf("    - Enter your email address\n")
 				fmt.Printf("    - Agree to the terms of service\n")
 				fmt.Printf("    - Create a DNS TXT record in your DNS provider\n")
-				fmt.Printf("\n--------------------------------------\n\n")
+				fmt.Printf("\nPress Enter to run certbot (or Ctrl-C to quit): ")
+				_, err = reader.ReadString('\n')
+				if err != nil {
+					fmt.Printf("\nError reading input\n")
+					return cli.Exit("", 1)
+				}
+				fmt.Printf("\n------------ (RUNNING CERTBOT) ------------\n\n")
 				if err := certbot.Run(domain); err != nil {
 					fmt.Printf("Error running certbot: %s\n", err)
+					return cli.Exit("", 1)
+				}
+				fmt.Printf("\n------------ (END CERTBOT) ------------\n")
+				certs2, err2 := certbot.Certificates()
+				if err2 != nil {
+					fmt.Printf("x Error checking cert after certbot: %s\n", err2)
+					return cli.Exit("", 1)
+				}
+				certNowOK := false
+				var certDaysLeft int
+				for _, c := range certs2 {
+					if c.Domain == domain && c.Valid {
+						certNowOK = true
+						certDaysLeft = c.DaysLeft
+						break
+					}
+				}
+				if certNowOK {
+					fmt.Printf("✓ Certificate for '%s' is valid (%d days left)\n", domain, certDaysLeft)
+				} else {
+					fmt.Printf("x Certificate for '%s' not found or invalid after certbot run\n", domain)
 					return cli.Exit("", 1)
 				}
 			}
