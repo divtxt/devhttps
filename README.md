@@ -50,3 +50,41 @@ open "https://dev.myapp.com/"
 ```
 
 (Don't forget to start your app e.g. "npm run dev")
+
+
+## Usage
+
+
+### `devhttps show`
+
+Show all configured development domains.
+
+```shell
+$ devhttps show
+dev.myapp.com → port 3000
+api.dev.myapp.com → port 8000
+```
+
+
+### `devhttps add`
+
+Add a development domain proxied to a local port.
+
+```shell
+$ devhttps add dev.myapp.com 3000
+Saved: dev.myapp.com → port 3000
+```
+
+
+### `devhttps check`
+
+Run various checks. Use this to diagnose issues.
+
+```shell
+$ devhttps check
+certbot: found (/usr/local/bin/certbot)
+certbot: version OK (certbot 5.0.0)
+caddy: found (/usr/local/bin/caddy)
+caddy: version OK (v2.8.4 h1:...)
+```
+
