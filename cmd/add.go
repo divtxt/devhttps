@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"os"
 
+	"github.com/divtxt/devhttps/internal/certbot"
 	"github.com/divtxt/devhttps/internal/config"
 	"github.com/divtxt/devhttps/internal/hostcheck"
 	"github.com/divtxt/devhttps/internal/validate"
@@ -36,42 +39,28 @@ Example:
 			domain := cmd.Args().Get(0)
 			portStr := cmd.Args().Get(1)
 
+			// Detect if stdin is a terminal (interactive vs non-interactive)
+			isInteractive := false
+			if fi, err := os.Stdin.Stat(); err == nil {
+				isInteractive = (fi.Mode() & os.ModeCharDevice) != 0
+			}
+			if !isInteractive {
+				fmt.Println("Error: 'add' must be run in an interactive terminal")
+				return cli.Exit("", 1)
+			}
+
 			if err := validate.Domain(domain); err != nil {
 				fmt.Printf("Error: %s\n", err)
 				return cli.Exit("", 1)
 			}
+			fmt.Printf("✓ Domain: %s\n", domain)
 
 			port, err := validate.Port(portStr)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)
 				return cli.Exit("", 1)
 			}
-
-			result, err := hostcheck.CheckResolvesToLocalhost(domain)
-			if err != nil {
-				fmt.Printf("Error checking host resolution: %s\n", err)
-				return cli.Exit("", 1)
-			}
-
-			if !result.FoundInHostsFile && !result.FoundViaDNS {
-				fmt.Printf("'%s' does not resolve to localhost.\n", domain)
-				fmt.Printf(`
-To fix this, use ONE of the following options:
-
-  Option A — Add a DNS A record (works across your network):
-    In your DNS provider, add an A record:
-      %s  →  127.0.0.1
-
-  Option B — Edit /etc/hosts (quick, local-only):
-    Add this line to /etc/hosts:
-      127.0.0.1   %s
-
-
-Once done, re-run:
-  devhttps add %s %s
-`, domain, domain, domain, portStr)
-				return cli.Exit("", 1)
-			}
+			fmt.Printf("✓ Port: %d\n\n", port)
 
 			cfg, _ := config.Load()
 			cfg.Add(domain, port)
@@ -79,9 +68,56 @@ Once done, re-run:
 				fmt.Printf("Error saving config: %s\n", err)
 				return cli.Exit("", 1)
 			}
-			fmt.Printf("Saved: %s → port %d\n", domain, port)
+			fmt.Printf("✓ Saved config entry: %s → port %d\n\n", domain, port)
+
+			reader := bufio.NewReader(os.Stdin)
+
+			// Check DNS resolution in a loop until it succeeds or user cancels
+			for {
+				fmt.Printf("→ Checking DNS resolution for '%s'...\n", domain)
+				result, err := hostcheck.CheckResolvesToLocalhost(domain)
+				if err != nil {
+					fmt.Printf("x Error checking host resolution: %s\n", err)
+					return cli.Exit("", 1)
+				}
+
+				if result.FoundInHostsFile || result.FoundViaDNS {
+					// DNS is set up correctly
+					fmt.Printf("✓ '%s' resolves to 127.0.0.1 (or ::1)\n\n", domain)
+					break
+				}
+
+				// DNS not set up yet
+				fmt.Printf("x '%s' does not resolve to localhost yet.\n\n", domain)
+				fmt.Printf("→ Do ONE of the following:\n\n")
+				fmt.Printf("  (A) Add this A record in your DNS provider:\n")
+				fmt.Printf("      %s  →  127.0.0.1\n\n", domain)
+				fmt.Printf("  (B) Add this line to your /etc/hosts file:\n")
+				fmt.Printf("\n127.0.0.1   %s\n\n", domain)
+
+				fmt.Printf("Press Enter when you've made the DNS entry (or Ctrl-C to quit): ")
+
+				_, err = reader.ReadString('\n')
+				if err != nil {
+					fmt.Printf("\nError reading input\n")
+					return cli.Exit("", 1)
+				}
+				fmt.Println()
+			}
+
+			fmt.Printf("→ Running certbot to create certificates for '%s'...\n", domain)
+			fmt.Printf("\n    You will be prompted to do the following:\n")
+			fmt.Printf("    - Enter your email address\n")
+			fmt.Printf("    - Agree to the terms of service\n")
+			fmt.Printf("    - Create a DNS TXT record in your DNS provider\n")
+			fmt.Printf("\n--------------------------------------\n\n")
+			if err := certbot.Run(domain); err != nil {
+				fmt.Printf("Error running certbot: %s\n", err)
+				return cli.Exit("", 1)
+			}
+
 			fmt.Printf("\nYour service is now available at:\n")
-			fmt.Printf("\nhttps://%s\n\n", domain)
+			fmt.Printf("\n  https://%s\n\n", domain)
 			return nil
 		},
 	}
