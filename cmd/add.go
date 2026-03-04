@@ -160,7 +160,8 @@ Example:
 			}
 
 			fmt.Printf("\nYour service is now available at:\n")
-			fmt.Printf("\n  https://%s\n\n", domain)
+			fmt.Printf("\n    https://%s\n\n", domain)
+			fmt.Printf("Remember to run your service, or use: devhttps http %d\n", port)
 			return nil
 		},
 	}

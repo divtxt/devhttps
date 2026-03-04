@@ -14,6 +14,7 @@ var app = &cli.Command{
 		newAddCommand(),
 		newShowCommand(),
 		newCheckCommand(),
+		newHttpCommand(),
 	},
 }
 
