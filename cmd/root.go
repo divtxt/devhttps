@@ -12,6 +12,7 @@ var app = &cli.Command{
 	Usage: "Easy HTTPS reverse proxy for local development",
 	Commands: []*cli.Command{
 		newAddCommand(),
+		newCheckCommand(),
 		newShowCommand(),
 	},
 }
