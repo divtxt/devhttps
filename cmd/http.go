@@ -25,7 +25,7 @@ func newHttpCommand() *cli.Command {
 			}
 			mux := http.NewServeMux()
 			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprintln(w, "hello")
+				fmt.Fprintf(w, "hello (devhttps http %s)\n", port)
 			})
 			fmt.Printf("HTTP server running on http://localhost:%s\n", port)
 			fmt.Printf("(use Ctrl-C to stop)\n")

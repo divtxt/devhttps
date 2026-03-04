@@ -19,7 +19,14 @@ DevHttps automatically generates a https certificate,  and configures and runs
 
 ## Quickstart:
 
-(0) Clone the repo & build:
+(1) Install needed tools:
+
+```shell
+brew install certbot caddy
+```
+
+
+(2) Clone the repo & build:
 
 ```shell
 # Clone the repo
@@ -32,19 +39,12 @@ go build main.go
 ```
 
 
-(1) Install needed tools:
-
-```shell
-brew install certbot caddy
-```
-
-
-(2) Choose a subdomain for development e.g. `dev.yourapp.com`:
+(3) Choose a subdomain for development e.g. `dev.yourapp.com`:
 
 Use a domain you control (in place of "yourapp.com") - you must be able to create DNS entries!
 
 
-(3) Configure DevHttps for your application:
+(4) Configure DevHttps for your application:
   - Use your chosen subdomain (in place of "dev.yourapp.com")
   - Use the correct development port for your app (in place of 3000)
   - Follow instructions
@@ -54,12 +54,45 @@ Use a domain you control (in place of "yourapp.com") - you must be able to creat
 ```
 
 
-(4) Enjoy https in development!
+(5) Run the https server:
 
-(Don't forget to start your app e.g. "npm run dev")
+```shell
+./devhttps run
+```
+
+(and don't forget to start your app)
 
 
 ## Usage
+
+
+### `devhttps add`
+
+Add a development domain proxied to a local port.
+
+```shell
+$ devhttps add dev.myapp.com 3000
+...
+
+✓ Domain added. Run https server using:  devhttps run
+```
+
+
+### `devhttps run`
+
+Run Caddy https reverse proxy for the configured domains.
+
+```shell
+$ devhttps run
+
+Configured domains:
+  ✓ https://dev.myapp.com → :3000  (cert: VALID, 89 days left)
+
+
+Starting Caddy...
+
+...
+```
 
 
 ### `devhttps show`
@@ -69,23 +102,8 @@ Show all configured development domains.
 ```shell
 $ devhttps show
 https://dev.myapp.com/ → http://localhost:3000/
-https://api.dev.myapp.com/ → http://localhost:8000/
 ```
 
-
-### `devhttps add`
-
-Add a development domain proxied to a local port.
-
-```shell
-$ devhttps add dev.myapp.com 3000
-Saved: dev.myapp.com → port 3000
-
-Your service is now available at:
-
-https://dev.myapp.com
-
-```
 
 
 ### `devhttps check`
@@ -94,10 +112,18 @@ Run various checks. Use this to diagnose issues.
 
 ```shell
 $ devhttps check
-✓ certbot: certbot 5.3.1 (/opt/homebrew/bin/certbot)
-✓ caddy: v2.10.2 h1:g/gTYjGMD0dec+UgMw8SnfmJ3I9+M2TdvoRL/Ovu6U8= (/opt/homebrew/bin/caddy)
+Tools:
+  ✓ certbot: certbot 5.3.1 (/opt/homebrew/bin/certbot)
+  ✓ caddy: v2.10.2 h1:g/gTYjGMD0dec+UgMw8SnfmJ3I9+M2TdvoRL/Ovu6U8= (/opt/homebrew/bin/caddy)
 
-Certbot certificates:
-  ✓ dev.myapp.com  (VALID: 89 days)
+Config:
+  ✓ /Users/div/.devhttps/config.json
+
+Configured domains:
+  ✓ https://dev.myapp.com → :3000  (cert: VALID, 89 days left)
+
+
+(to edit port or renew certificates, use add command)
+
 ```
 

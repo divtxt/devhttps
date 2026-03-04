@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/divtxt/devhttps/internal/caddy"
 	"github.com/divtxt/devhttps/internal/certbot"
 	"github.com/divtxt/devhttps/internal/config"
 	"github.com/divtxt/devhttps/internal/hostcheck"
@@ -17,16 +16,13 @@ import (
 func newAddCommand() *cli.Command {
 	return &cli.Command{
 		Name:      "add",
-		Usage:     "Add a development domain proxied to a local port",
+		Usage:     "Add a domain",
 		ArgsUsage: "<dev-domain> <port>",
 		Description: `Configure DevHttps to proxy HTTPS traffic for <dev-domain> to localhost:<port>.
 
 You must have the ability to make DNS entries for this domain.
 
-<dev-domain> must be a fully-qualified domain name (e.g. dev.myapp.com) that
-resolves to 127.0.0.1 or ::1, via DNS.
-
-<port> is the local port your dev server is listening on (1-65535).
+<port> is the local http port your dev server is listening on (1-65535).
 
 Example:
   devhttps add dev.myapp.com 3000`,
@@ -160,33 +156,7 @@ Example:
 				}
 			}
 
-		// (1) Load full config
-		cfg, err = config.Load()
-		if err != nil {
-			fmt.Printf("Error loading config for Caddyfile: %s\n", err)
-			return cli.Exit("", 1)
-		}
-		// (2) Generate Caddyfile content
-		content, err := caddy.GenerateCaddyfile(cfg)
-		if err != nil {
-			fmt.Printf("Error generating Caddyfile: %s\n", err)
-			return cli.Exit("", 1)
-		}
-		// (3) Write Caddyfile to disk
-		if err := caddy.WriteCaddyfile(content); err != nil {
-			fmt.Printf("Error writing Caddyfile: %s\n", err)
-			return cli.Exit("", 1)
-		}
-		// (4) Validate written Caddyfile
-		if err := caddy.Validate(content); err != nil {
-			fmt.Printf("Error validating Caddyfile: %s\n", err)
-			return cli.Exit("", 1)
-		}
-		fmt.Printf("✓ Caddyfile updated and validated\n\n")
-
-		fmt.Printf("\nYour service is now available at:\n")
-		fmt.Printf("\n    https://%s\n\n", domain)
-		fmt.Printf("Remember to run your service, or use: devhttps http %d\n", port)
+		fmt.Printf("\n✓ Configuration ready. Run https server using:  devhttps run\n\n")
 		return nil
 		},
 	}

@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/divtxt/devhttps/internal/caddy"
 	"github.com/divtxt/devhttps/internal/certbot"
 	"github.com/divtxt/devhttps/internal/config"
 	"github.com/urfave/cli/v3"
@@ -45,10 +43,6 @@ func newCheckCommand() *cli.Command {
 			fmt.Println()
 			printConfiguredDomains(cfg, certs, certsErr != nil)
 			printUnusedCerts(cfg, certs, certsErr)
-
-			fmt.Println()
-			fmt.Println("Caddy:")
-			ok = checkCaddy(cfg) && ok
 
 			fmt.Println()
 			fmt.Println("(to edit port or renew certificates, use add command)")
@@ -95,21 +89,31 @@ func printConfiguredDomains(cfg *config.Config, certs []certbot.CertInfo, certbo
 		fmt.Println()
 		return
 	}
+
+	// Calculate max URL width for column alignment
+	maxWidth := 0
+	for _, e := range cfg.Entries {
+		if w := len("https://" + e.Domain); w > maxWidth {
+			maxWidth = w
+		}
+	}
+
 	certMap := make(map[string]certbot.CertInfo)
 	for _, c := range certs {
 		certMap[c.Domain] = c
 	}
 	for _, e := range cfg.Entries {
+		url := "https://" + e.Domain
 		if certbotFailed {
-			fmt.Printf("  ? %s → :%d  (cert: unknown)\n", e.Domain, e.Port)
+			fmt.Printf("  ? %-*s → :%d  (cert: unknown)\n", maxWidth, url, e.Port)
 		} else if cert, found := certMap[e.Domain]; found {
 			if cert.Valid {
-				fmt.Printf("  ✓ %s → :%d  (cert: VALID, %d days left)\n", e.Domain, e.Port, cert.DaysLeft)
+				fmt.Printf("  ✓ %-*s → :%d  (cert: VALID, %d days left)\n", maxWidth, url, e.Port, cert.DaysLeft)
 			} else {
-				fmt.Printf("  ✗ %s → :%d  (cert: INVALID)\n", e.Domain, e.Port)
+				fmt.Printf("  ✗ %-*s → :%d  (cert: INVALID)\n", maxWidth, url, e.Port)
 			}
 		} else {
-			fmt.Printf("  ✗ %s → :%d  (cert: MISSING)\n", e.Domain, e.Port)
+			fmt.Printf("  ✗ %-*s → :%d  (cert: MISSING)\n", maxWidth, url, e.Port)
 		}
 	}
 	fmt.Println()
@@ -144,38 +148,4 @@ func printUnusedCerts(cfg *config.Config, certs []certbot.CertInfo, certsErr err
 			fmt.Printf("  ✗ %s\n", c.Domain)
 		}
 	}
-}
-
-func checkCaddy(cfg *config.Config) bool {
-	ok := true
-	dir, _ := caddy.Dir()
-	caddyfilePath := filepath.Join(dir, "Caddyfile")
-
-	expected, err := caddy.GenerateCaddyfile(cfg)
-	if err != nil {
-		fmt.Printf("  ✗ %s: failed to generate expected content: %v\n", caddyfilePath, err)
-		return false
-	}
-
-	actual, err := caddy.ReadCaddyfile()
-	if err != nil {
-		fmt.Printf("  ✗ %s: %v\n", caddyfilePath, err)
-		return false
-	}
-
-	if actual != expected {
-		fmt.Printf("  ✗ %s: content does not match config\n", caddyfilePath)
-		ok = false
-	} else {
-		fmt.Printf("  ✓ %s\n", caddyfilePath)
-	}
-
-	if err := caddy.Validate(actual); err != nil {
-		fmt.Printf("  ✗ caddy validate: %v\n", err)
-		ok = false
-	} else {
-		fmt.Printf("  ✓ caddy validate\n")
-	}
-
-	return ok
 }
