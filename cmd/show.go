@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/divtxt/devhttps/internal/certbot"
 	"github.com/divtxt/devhttps/internal/config"
 	"github.com/urfave/cli/v3"
 )
@@ -19,13 +20,9 @@ func newShowCommand() *cli.Command {
 				fmt.Printf("Error loading config (%s): %s\n", path, err)
 				return cli.Exit("", 1)
 			}
-			if len(cfg.Entries) == 0 {
-				fmt.Println("Configured domains: (none)")
-				return nil
-			}
-			for _, e := range cfg.Entries {
-				fmt.Printf("https://%s/ → http://localhost:%d/\n", e.Domain, e.Port)
-			}
+			certs, certsErr := certbot.Certificates()
+			printConfiguredDomains(cfg, certs, certsErr != nil)
+			fmt.Println("For more details, use: devhttps check")
 			return nil
 		},
 	}
