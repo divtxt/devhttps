@@ -105,15 +105,31 @@ Example:
 				fmt.Println()
 			}
 
-			fmt.Printf("→ Running certbot to create certificates for '%s'...\n", domain)
-			fmt.Printf("\n    You will be prompted to do the following:\n")
-			fmt.Printf("    - Enter your email address\n")
-			fmt.Printf("    - Agree to the terms of service\n")
-			fmt.Printf("    - Create a DNS TXT record in your DNS provider\n")
-			fmt.Printf("\n--------------------------------------\n\n")
-			if err := certbot.Run(domain); err != nil {
-				fmt.Printf("Error running certbot: %s\n", err)
-				return cli.Exit("", 1)
+			// Check if a valid cert already exists
+			certOK := false
+			var daysLeft int
+			certs, _ := certbot.Certificates()
+			for _, c := range certs {
+				if c.Domain == domain && c.Valid {
+					certOK = true
+					daysLeft = c.DaysLeft
+					break
+				}
+			}
+
+			if certOK {
+				fmt.Printf("✓ %s cert already exists (%d days left)\n", domain, daysLeft)
+			} else {
+				fmt.Printf("→ Running certbot to create certificates for '%s'...\n", domain)
+				fmt.Printf("\n    You will be prompted to do the following:\n")
+				fmt.Printf("    - Enter your email address\n")
+				fmt.Printf("    - Agree to the terms of service\n")
+				fmt.Printf("    - Create a DNS TXT record in your DNS provider\n")
+				fmt.Printf("\n--------------------------------------\n\n")
+				if err := certbot.Run(domain); err != nil {
+					fmt.Printf("Error running certbot: %s\n", err)
+					return cli.Exit("", 1)
+				}
 			}
 
 			fmt.Printf("\nYour service is now available at:\n")

@@ -44,7 +44,7 @@ func newCheckCommand() *cli.Command {
 			printConfiguredDomains(cfg, certs, certsErr != nil)
 			printUnusedCerts(cfg, certs, certsErr)
 
-			fmt.Println("To edit port or renew certificates, use: devhttps add")
+			fmt.Println("(to edit port or renew certificates, use add command)")
 			fmt.Println()
 			return nil
 		},

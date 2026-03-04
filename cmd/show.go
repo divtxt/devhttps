@@ -22,7 +22,7 @@ func newShowCommand() *cli.Command {
 			}
 			certs, certsErr := certbot.Certificates()
 			printConfiguredDomains(cfg, certs, certsErr != nil)
-			fmt.Println("For more details, use: devhttps check")
+			fmt.Println("(for more details, use check command)")
 			return nil
 		},
 	}
