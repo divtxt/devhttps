@@ -7,9 +7,12 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+var Version = "1.0.0"
+
 var app = &cli.Command{
-	Name:  "devhttps",
-	Usage: "Easy HTTPS reverse proxy for local development",
+	Name:    "devhttps",
+	Usage:   "Easy HTTPS reverse proxy for local development",
+	Version: Version,
 	Commands: []*cli.Command{
 		newAddCommand(),
 		newRunCommand(),
