@@ -80,6 +80,8 @@ Once done, re-run:
 				return cli.Exit("", 1)
 			}
 			fmt.Printf("Saved: %s → port %d\n", domain, port)
+			fmt.Printf("\nYour service is now available at:\n")
+			fmt.Printf("\nhttps://%s\n\n", domain)
 			return nil
 		},
 	}

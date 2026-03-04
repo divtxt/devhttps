@@ -24,7 +24,7 @@ func newShowCommand() *cli.Command {
 				return nil
 			}
 			for _, e := range cfg.Entries {
-				fmt.Printf("%s → port %d\n", e.Domain, e.Port)
+				fmt.Printf("https://%s/ → http://localhost:%d/\n", e.Domain, e.Port)
 			}
 			return nil
 		},

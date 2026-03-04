@@ -61,8 +61,8 @@ Show all configured development domains.
 
 ```shell
 $ devhttps show
-dev.myapp.com → port 3000
-api.dev.myapp.com → port 8000
+https://dev.myapp.com/ → http://localhost:3000/
+https://api.dev.myapp.com/ → http://localhost:8000/
 ```
 
 
@@ -73,6 +73,11 @@ Add a development domain proxied to a local port.
 ```shell
 $ devhttps add dev.myapp.com 3000
 Saved: dev.myapp.com → port 3000
+
+Your service is now available at:
+
+https://dev.myapp.com
+
 ```
 
 
