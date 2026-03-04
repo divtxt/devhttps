@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/divtxt/devhttps/internal/config"
 	"github.com/divtxt/devhttps/internal/hostcheck"
 	"github.com/divtxt/devhttps/internal/validate"
 	"github.com/urfave/cli/v3"
@@ -29,7 +30,7 @@ Example:
 			if cmd.Args().Len() != 2 {
 				fmt.Println(cmd.Description)
 				fmt.Printf("\nUsage: devhttps %s %s\n", cmd.Name, cmd.ArgsUsage)
-				return nil
+				return cli.Exit("", 1)
 			}
 
 			domain := cmd.Args().Get(0)
@@ -37,18 +38,19 @@ Example:
 
 			if err := validate.Domain(domain); err != nil {
 				fmt.Printf("Error: %s\n", err)
-				return nil
+				return cli.Exit("", 1)
 			}
 
-			if _, err := validate.Port(portStr); err != nil {
+			port, err := validate.Port(portStr)
+			if err != nil {
 				fmt.Printf("Error: %s\n", err)
-				return nil
+				return cli.Exit("", 1)
 			}
 
 			result, err := hostcheck.CheckResolvesToLocalhost(domain)
 			if err != nil {
 				fmt.Printf("Error checking host resolution: %s\n", err)
-				return nil
+				return cli.Exit("", 1)
 			}
 
 			if !result.FoundInHostsFile && !result.FoundViaDNS {
@@ -68,10 +70,16 @@ To fix this, use ONE of the following options:
 Once done, re-run:
   devhttps add %s %s
 `, domain, domain, domain, portStr)
-				return nil
+				return cli.Exit("", 1)
 			}
 
-			fmt.Println("Added!")
+			cfg, _ := config.Load()
+			cfg.Add(domain, port)
+			if err := config.Save(cfg); err != nil {
+				fmt.Printf("Error saving config: %s\n", err)
+				return cli.Exit("", 1)
+			}
+			fmt.Printf("Saved: %s → port %d\n", domain, port)
 			return nil
 		},
 	}
