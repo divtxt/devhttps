@@ -22,7 +22,7 @@ DevHttps automatically generates a https certificate,  and configures and runs
 (1) Install:
 
 ```shell
-brew install devhttps certbot caddy
+brew install divtxt/tap/devhttps certbot caddy
 ```
 
 
@@ -33,14 +33,14 @@ brew install devhttps certbot caddy
   - Run this command and follow instructions
 
 ```shell
-./devhttps add dev.myapp.com 3000
+devhttps add dev.myapp.com 3000
 ```
 
 
 (3) Run the https server (wraps caddy run):
 
 ```shell
-./devhttps run
+devhttps run
 ```
 
 (and don't forget to start your app)
