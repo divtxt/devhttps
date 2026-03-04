@@ -19,11 +19,9 @@ DevHttps automatically generates a https certificate,  and configures and runs
 
 ## Quickstart:
 
-(1) Install:
+(0) Clone the repo & build:
 
 ```shell
-brew install certbot caddy
-
 # Clone the repo
 cd ~/go/
 git clone git@github.com:divtxt/devhttps.git
@@ -34,28 +32,29 @@ go build main.go
 ```
 
 
+(1) Install needed tools:
+
+```shell
+brew install certbot caddy
+```
+
+
 (2) Choose a subdomain for development e.g. `dev.yourapp.com`:
 
 Use a domain you control (in place of "yourapp.com") - you must be able to create DNS entries!
 
 
-(3) Configure DevHttps for your chosen domain:
+(3) Configure DevHttps for your application:
   - Use your chosen subdomain (in place of "dev.yourapp.com")
   - Use the correct development port for your app (in place of 3000)
   - Follow instructions
 
 ```shell
 ./devhttps add dev.myapp.com 3000
-
-# (create DNS entries as shown by the command)
 ```
 
 
-(4) Enjoy https in development:
-
-```shell
-open "https://dev.myapp.com/"
-```
+(4) Enjoy https in development!
 
 (Don't forget to start your app e.g. "npm run dev")
 
@@ -95,9 +94,10 @@ Run various checks. Use this to diagnose issues.
 
 ```shell
 $ devhttps check
-certbot: found (/usr/local/bin/certbot)
-certbot: version OK (certbot 5.0.0)
-caddy: found (/usr/local/bin/caddy)
-caddy: version OK (v2.8.4 h1:...)
+✓ certbot: certbot 5.3.1 (/opt/homebrew/bin/certbot)
+✓ caddy: v2.10.2 h1:g/gTYjGMD0dec+UgMw8SnfmJ3I9+M2TdvoRL/Ovu6U8= (/opt/homebrew/bin/caddy)
+
+Certbot certificates:
+  ✓ dev.myapp.com  (VALID: 89 days)
 ```
 
