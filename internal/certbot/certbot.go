@@ -1,7 +1,9 @@
 package certbot
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -67,6 +69,28 @@ func Certificates() ([]CertInfo, error) {
 		return nil, fmt.Errorf("%s: %w", strings.TrimSpace(string(out)), err)
 	}
 	return parseCertificates(string(out)), nil
+}
+
+func CertificatesVerbose() ([]CertInfo, error) {
+	configDir, logsDir, workDir, err := Dirs()
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("\n------------ (RUNNING CERTBOT CERTIFICATES) ------------\n\n")
+	var buf bytes.Buffer
+	cmd := exec.Command("certbot", "certificates",
+		"--config-dir", configDir,
+		"--logs-dir", logsDir,
+		"--work-dir", workDir,
+	)
+	cmd.Stdout = io.MultiWriter(os.Stdout, &buf)
+	cmd.Stderr = io.MultiWriter(os.Stderr, &buf)
+	err = cmd.Run()
+	fmt.Printf("\n------------ (END CERTBOT CERTIFICATES) ------------\n")
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", strings.TrimSpace(buf.String()), err)
+	}
+	return parseCertificates(buf.String()), nil
 }
 
 func parseCertificates(output string) []CertInfo {

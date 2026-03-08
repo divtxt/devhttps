@@ -29,7 +29,7 @@ func newCheckCommand() *cli.Command {
 			}
 
 			cfg, cfgErr := config.Load()
-			certs, certsErr := certbot.Certificates()
+			certs, certsErr := certbot.CertificatesVerbose()
 
 			fmt.Println()
 			fmt.Println("Config:")
