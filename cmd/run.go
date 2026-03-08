@@ -30,6 +30,7 @@ func newRunCommand() *cli.Command {
 			printConfiguredDomains(cfg, certs, certsErr != nil)
 
 			// Generate Caddyfile
+			fmt.Printf("Generating Caddyfile...\n")
 			content, err := caddy.GenerateCaddyfile(cfg)
 			if err != nil {
 				fmt.Printf("Error generating Caddyfile: %s\n", err)
