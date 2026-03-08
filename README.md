@@ -3,9 +3,9 @@
 **Easy https for local web development**
 
 - Nice urls - eg  "dev.yourapp.com" instead of "localhost:3000"
-- No need to install a custom CA certificate
-- No need to disable security settings in development.
 - Catch https issues in development.
+- Stop disabling security settings in development.
+- No need to install a custom CA.
 
 DevHttps uses [certbot](https://certbot.eff.org/) to generate certificates and [Caddy](https://caddyserver.com/) as a https server.
 
@@ -51,7 +51,5 @@ Enjoy local development with https!
 - Not implemented at this time:
   - remove command (edit the config file in ~/.devhttps/)
   - Any detection/warning about multiple apps on the same port
-
-
-DevHttps is based on this earlier document of manual steps:
-[HTTPS in Development (early 2023)](https://gist.github.com/divtxt/59e8c9ed6a4c7c90af7e73e687534b3b). Initial development involved Claude Code and 15 hours of transit in an airport lounge. :P
+- How it works: automates the steps in
+[this document](https://gist.github.com/divtxt/59e8c9ed6a4c7c90af7e73e687534b3b).
