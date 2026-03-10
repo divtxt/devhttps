@@ -2,7 +2,7 @@
 
 **Easy https for local web development**
 
-- Nice urls - eg  "dev.yourapp.com" instead of "localhost:3000"
+- Nice urls - eg  "dev.example.com" instead of "localhost:3000"
 - Catch https issues in development.
 - Stop disabling security settings in development.
 - No need to install a custom CA.
@@ -22,10 +22,10 @@ brew install divtxt/tap/devhttps certbot caddy
 (2) Configure DevHttps for your development:
 
 ```shell
-devhttps add dev.myapp.com 3000
+devhttps add dev.example.com 3000
 ```
 
-- Use a subdomain on your application domain or another domain you control. You must be able to create DNS
+- Use a subdomain on a domain you control. You must be able to create DNS
 entries.
 - Use the correct development port for your app.
 - Create DNS entries as instructed by the command.
