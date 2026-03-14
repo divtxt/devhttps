@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/divtxt/devhttps/internal/certbot"
-	"github.com/divtxt/devhttps/internal/config"
 	"github.com/divtxt/devhttps/internal/hostcheck"
 	"github.com/divtxt/devhttps/internal/validate"
 	"github.com/urfave/cli/v3"
@@ -16,25 +15,22 @@ import (
 func newAddCommand() *cli.Command {
 	return &cli.Command{
 		Name:      "add",
-		Usage:     "Add a domain",
-		ArgsUsage: "<dev-domain> <port>",
-		Description: `Configure DevHttps to proxy HTTPS traffic for <dev-domain> to localhost:<port>.
+		Usage:     "Genearate certificate for a domain using certbot",
+		ArgsUsage: "<domain>",
+		Description: `Verifies that DNS resolves <domain> to 127.0.0.1 (or ::1) and obtains a certificate via certbot.
 
 You must have the ability to make DNS entries for this domain.
 
-<port> is the local http port your dev server is listening on (1-65535).
-
 Example:
-  devhttps add dev.myapp.com 3000`,
+  devhttps add dev.example.com`,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			if cmd.Args().Len() != 2 {
+			if cmd.Args().Len() != 1 {
 				fmt.Println(cmd.Description)
 				fmt.Printf("\nUsage: devhttps %s %s\n", cmd.Name, cmd.ArgsUsage)
 				return cli.Exit("", 1)
 			}
 
 			domain := cmd.Args().Get(0)
-			portStr := cmd.Args().Get(1)
 
 			// Detect if stdin is a terminal (interactive vs non-interactive)
 			isInteractive := false
@@ -50,22 +46,7 @@ Example:
 				fmt.Printf("Error: %s\n", err)
 				return cli.Exit("", 1)
 			}
-			fmt.Printf("✓ Domain: %s\n", domain)
-
-			port, err := validate.Port(portStr)
-			if err != nil {
-				fmt.Printf("Error: %s\n", err)
-				return cli.Exit("", 1)
-			}
-			fmt.Printf("✓ Port: %d\n\n", port)
-
-			cfg, _ := config.Load()
-			cfg.Add(domain, port)
-			if err := config.Save(cfg); err != nil {
-				fmt.Printf("Error saving config: %s\n", err)
-				return cli.Exit("", 1)
-			}
-			fmt.Printf("✓ Saved config entry: %s → port %d\n\n", domain, port)
+			fmt.Printf("✓ Domain: %s\n\n", domain)
 
 			reader := bufio.NewReader(os.Stdin)
 
@@ -79,12 +60,10 @@ Example:
 				}
 
 				if result.FoundInHostsFile || result.FoundViaDNS {
-					// DNS is set up correctly
 					fmt.Printf("✓ '%s' resolves to 127.0.0.1 (or ::1)\n\n", domain)
 					break
 				}
 
-				// DNS not set up yet
 				fmt.Printf("x '%s' does not resolve to localhost yet.\n\n", domain)
 				fmt.Printf("→ Do ONE of the following:\n\n")
 				fmt.Printf("  (A) Add this A record in your DNS provider:\n")
@@ -123,7 +102,7 @@ Example:
 				fmt.Printf("    - Agree to the terms of service\n")
 				fmt.Printf("    - Create a DNS TXT record in your DNS provider\n")
 				fmt.Printf("\nPress Enter to run certbot (or Ctrl-C to quit): ")
-				_, err = reader.ReadString('\n')
+				_, err := reader.ReadString('\n')
 				if err != nil {
 					fmt.Printf("\nError reading input\n")
 					return cli.Exit("", 1)
@@ -156,8 +135,8 @@ Example:
 				}
 			}
 
-		fmt.Printf("\n✓ Configuration ready. Run https server using:  devhttps run\n\n")
-		return nil
+			fmt.Printf("\n✓ Domain ready. Run https server using:  devhttps run %s <port>\n\n", domain)
+			return nil
 		},
 	}
 }

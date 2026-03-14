@@ -12,7 +12,7 @@ func Domain(s string) error {
 		return fmt.Errorf("domain name too long (max 253 characters)")
 	}
 	if !domainRegex.MatchString(s) {
-		return fmt.Errorf("invalid domain name %q (must be a fully-qualified domain like dev.myapp.com)", s)
+		return fmt.Errorf("invalid domain name %q (must be a fully-qualified domain like dev.example.com)", s)
 	}
 	return nil
 }
