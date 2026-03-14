@@ -16,6 +16,7 @@ var app = &cli.Command{
 	Commands: []*cli.Command{
 		newAddCommand(),
 		newRunCommand(),
+		newCaddyfileCommand(),
 		newShowCommand(),
 		newCheckCommand(),
 		newHttpCommand(),
