@@ -7,7 +7,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-var Version = "1.0.2"
+var Version = "1.0.3"
 
 var app = &cli.Command{
 	Name:    "devhttps",
